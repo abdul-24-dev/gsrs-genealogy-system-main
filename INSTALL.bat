@@ -58,10 +58,10 @@ if %errorlevel% neq 0 (
 echo [OK] Dependencies installed successfully.
 echo.
 
-:: 5. Generate Prisma Client and Push Database Schema
-echo [5/6] Setting up SQLite database and running migrations...
+:: 5. Generate Prisma Client and Apply Database Migrations
+echo [5/6] Applying PostgreSQL database migrations...
 call npx prisma generate
-call npx prisma db push
+call npx prisma migrate deploy
 if %errorlevel% neq 0 (
     echo [ERROR] Database initialization failed.
     pause

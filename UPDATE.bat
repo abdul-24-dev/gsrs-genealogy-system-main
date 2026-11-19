@@ -24,11 +24,11 @@ echo.
 echo [2/4] Checking and updating dependencies...
 call npm install --legacy-peer-deps
 
-:: 3. Database migrations (safe: preserves existing local records)
+:: 3. Database migrations (safe: preserves existing records)
 echo.
-echo [3/4] Synchronizing database schema (preserving your local records)...
+echo [3/4] Applying PostgreSQL database migrations (preserving your records)...
 call npx prisma generate
-call npx prisma db push
+call npx prisma migrate deploy
 
 :: 4. Build application
 echo.

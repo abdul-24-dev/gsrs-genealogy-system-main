@@ -19,6 +19,8 @@ import {
 import { checkSetupStatus } from "@/lib/auth";
 import { getSession } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const { setupCompleted, settings } = await checkSetupStatus();
   const session = await getSession();

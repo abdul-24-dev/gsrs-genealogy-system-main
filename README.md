@@ -8,7 +8,7 @@ Originally conceptualized as an academic development project for families and co
 
 ## 🌟 Key Capabilities
 
-- **Local-First & Offline Architecture**: Runs completely on a local Windows laptop without requiring continuous internet access, external database servers (Supabase, Firebase, PostgreSQL), or paid cloud subscriptions.
+- **PostgreSQL-Backed Architecture**: Stores family records in PostgreSQL so the app can run locally, on a private network, or on a hosted platform such as Vercel.
 - **First-Time Setup Wizard**: Automatically guides a new family administrator through a secure onboarding process on fresh installations.
 - **Relational Lineage Engine**: Strict relational integrity using unique member IDs (e.g., `GSRS-1001`). Prevents invalid circular ancestry and self-parenting loops while supporting multi-spouse unions.
 - **Multi-Generational Interactive Family Tree**: Zoom, drag, and pan across great-grandparents, grandparents, parents, children, and grandchildren with horizontal and vertical layout toggling.
@@ -16,7 +16,7 @@ Originally conceptualized as an academic development project for families and co
 - **Historical Document & Photo Archive**: Upload and store birth certificates, marriage certificates, wills, and historical family portraits safely on disk.
 - **Official Reports & Exports**: Instantly generate printable PDF dossiers and CSV spreadsheet downloads.
 - **Demographics & Analytics**: Visual charts for generational distributions, birth decade trends, and gender ratios.
-- **Disaster Recovery Backup & Portability**: Export your entire database and documents into a single portable `.zip` backup that can be transferred and restored on any computer.
+- **Document Backup & Portability**: Export uploaded documents into a portable `.zip` archive. Use your PostgreSQL provider's backup tooling for database records.
 
 ---
 
@@ -24,6 +24,7 @@ Originally conceptualized as an academic development project for families and co
 
 - **Operating System**: Windows 10, Windows 11, or Windows Server (also compatible with macOS and Linux)
 - **Runtime**: [Node.js](https://nodejs.org) (v18.x, v20.x, or newer LTS)
+- **Database**: PostgreSQL 14+ (local or hosted). Set `DATABASE_URL` in `.env` or in your hosting provider's environment variables.
 - **Memory (RAM)**: 4 GB minimum (8 GB recommended)
 - **Disk Storage**: At least 500 MB free space for the application and database
 
@@ -40,13 +41,14 @@ If Node.js is not already installed on your computer:
 ### Step 2: Download the Project
 1. On GitHub, click the green **Code** button and choose **Download ZIP** (or clone via Git: `git clone <repository-url>`).
 2. Extract the ZIP folder to your preferred location (e.g., `C:\GSRS` or `Desktop`).
+3. Open `.env` and replace `DATABASE_URL` with your PostgreSQL connection string. For hosted databases, use the non-pooling connection URL so migrations can run.
 
 ### Step 3: Run One-Click Installation
 1. Open the folder and double-click **`INSTALL.bat`**.
 2. The automated wizard will automatically:
    - Check Node.js runtime.
    - Install all required libraries.
-   - Initialize an independent SQLite database.
+   - Apply PostgreSQL database migrations.
    - Build the optimized production application.
 3. When installation finishes, press any key to close the window.
 
@@ -107,7 +109,7 @@ Whenever the developer adds new features, improves designs, or fixes issues:
 - **Framework**: Next.js 15 (App Router with Server Actions & API Route Handlers)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS (Custom Emerald Health & Longevity Palette)
-- **Database**: SQLite (Zero-config, embedded, isolated)
+- **Database**: PostgreSQL with Prisma migrations
 - **ORM**: Prisma Client v5
 - **Icons**: Lucide React
 - **Analytics**: Recharts
