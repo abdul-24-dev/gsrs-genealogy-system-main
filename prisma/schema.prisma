@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  fullName     String
+  role         String        @default("ADMIN") // SUPER_ADMIN, ADMIN, CONTRIBUTOR, VIEWER
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  activities   ActivityLog[]
+}
+
+model Family {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  origin      String?
+  community   String?
+  lga         String?
+  state       String?
+  country     String?    @default("Nigeria")
+  history     String?
+  emblemUrl   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  members     Member[]
+  documents   Document[]
+
+  @@index([name])
+}
+
+model Member {
+  id               String    @id @default(cuid())
+  memberId         String    @unique // e.g. GSRS-1001
+  firstName        String
+  middleName       String?
+  surname          String
+  fullName         String
+  gender           String    @default("MALE") // MALE, FEMALE, OTHER
+  dateOfBirth      DateTime?
+  placeOfBirth     String?
+  isDeceased       Boolean   @default(false)
+  dateOfDeath      DateTime?
+  placeOfDeath     String?
+  maritalStatus    String?   @default("SINGLE") // SINGLE, MARRIED, DIVORCED, WIDOWED
+  nationality      String?   @default("Nigerian")
+  occupation       String?
+  biography        String?
+  photoUrl         String?
+  generation       Int       @default(1)
+  ancestralOrigin  String?
+  notes            String?
+  phone            String?
+  email            String?
+  address          String?
+  isArchived       Boolean   @default(false)
+
+  // Relations
+  familyId         String?
+  family           Family?   @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  // Parent / Child relationships
+  parentRelations  ParentChildRelationship[] @relation("ChildToParents")
+  childRelations   ParentChildRelationship[] @relation("ParentToChildren")
+
+  // Marriage relationships
+  marriagesAsSpouse1 MarriageRelationship[]  @relation("Spouse1Marriages")
+  marriagesAsSpouse2 MarriageRelationship[]  @relation("Spouse2Marriages")
+
+  // Documents
+  documents        Document[]
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([fullName])
+  @@index([surname])
+  @@index([memberId])
+  @@index([familyId])
+  @@index([generation])
+}
+
+model ParentChildRelationship {
+  id               String   @id @default(cuid())
+  parentId         String
+  childId          String
+  relationshipType String   @default("BIOLOGICAL") // BIOLOGICAL, ADOPTED, STEP, FOSTER
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  parent           Member   @relation("ParentToChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  child            Member   @relation("ChildToParents", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+  @@index([parentId])
+  @@index([childId])
+}
+
+model MarriageRelationship {
+  id            String    @id @default(cuid())
+  spouse1Id     String
+  spouse2Id     String
+  marriageDate  DateTime?
+  marriagePlace String?
+  status        String    @default("MARRIED") // MARRIED, DIVORCED, SEPARATED, WIDOWED
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  spouse1       Member    @relation("Spouse1Marriages", fields: [spouse1Id], references: [id], onDelete: Cascade)
+  spouse2       Member    @relation("Spouse2Marriages", fields: [spouse2Id], references: [id], onDelete: Cascade)
+
+  @@unique([spouse1Id, spouse2Id])
+  @@index([spouse1Id])
+  @@index([spouse2Id])
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   @default("OTHER") // PHOTOGRAPH, BIRTH_CERTIFICATE, MARRIAGE_CERTIFICATE, DEATH_CERTIFICATE, HISTORICAL_DOCUMENT, OTHER
+  description String?
+  filePath    String
+  fileName    String
+  fileType    String?
+  fileSize    Int?     // bytes
+  uploadDate  DateTime @default(now())
+
+  memberId    String?
+  member      Member?  @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  familyId    String?
+  family      Family?  @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([familyId])
+  @@index([category])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userName  String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model ApplicationSettings {
+  id                 String   @id @default("global")
+  appName            String   @default("Genealogical Search and Record System")
+  familyOrOrgName    String   @default("Family Heritage Archive")
+  description        String?  @default("Preserving family records, history, and lineage across generations.")
+  setupCompleted     Boolean  @default(false)
+  theme              String   @default("light") // light, dark, system
+  allowedRegistration Boolean @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+model BackupRecord {
+  id        String   @id @default(cuid())
+  fileName  String
+  filePath  String
+  fileSize  Int
+  status    String   @default("SUCCESS")
+  createdBy String?
+  createdAt DateTime @default(now())
+}
